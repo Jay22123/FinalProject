@@ -161,7 +161,7 @@ def Search_by_Image(recipes, image, model, processor, top_k=5):
         recipe = recipes[label]
         results.append({
             "品名": label,
-            "機率": round(probability, 4),
+            "相似度": round(probability, 4),
             "圖片路徑": image_path if os.path.exists(image_path) else None,
             "食材": recipe["食材"],
             "步驟": recipe["步驟"]
