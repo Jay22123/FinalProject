@@ -2,22 +2,28 @@ import streamlit as st
 from PIL import Image
 from Read import Read_Model, Read_Data
 from Search import Search_by_Image, Search_by_Word, Search_by_ImageAndText
-
 # 初始化模型和數據
-@st.cache_resource
-def initialize_model():
-    return Read_Model()
-
 @st.cache_resource
 def initialize_data():
     return Read_Data()
 
-model, processor, tokenizer = initialize_model()
+
 recipes = initialize_data()
 
 # 應用程式標題
 st.title("智慧家常食譜")
 #st.write("使用 CLIP 模型進行圖片與文字的食譜搜尋")
+
+# 使用模型選擇
+model_option = st.sidebar.radio(
+    "選擇模型版本",
+    ("使用微調過的模型", "使用原始預訓練模型")
+)
+
+if model_option == "使用微調過的模型":
+    model, processor, tokenizer = initialize_model(fine_tuned=True)
+else:
+    model, processor, tokenizer = initialize_model(fine_tuned=False)
 
 # 功能選擇
 st.sidebar.header("功能選擇")
@@ -39,13 +45,13 @@ if option == "透過圖片搜尋食譜":
             for result in results:
                 st.subheader(f"品名：{result['品名']}")
                 if result["圖片路徑"]:
-                    st.image(result["圖片路徑"], caption=f"機率：{result['機率']:.4f}", use_container_width=True)
+                    st.image(result["圖片路徑"], caption=f"相似度：{result['相似度']:.4f}", use_container_width=True)
                 else:
                     st.warning(f"{result['品名']} 的圖片未找到")
                 st.write(f"食材：{result['食材']}")
                 st.write(f"步驟：{result['步驟']}")
-                st.write("-" * 50)
-
+                 st.write("-" * 50)
+                
 # 功能 2：透過文字搜尋食譜
 elif option == "透過文字搜尋食譜":
     st.header("透過文字搜尋食譜")  
