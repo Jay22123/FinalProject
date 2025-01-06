@@ -1,6 +1,6 @@
 import streamlit as st
 from PIL import Image
-from Read import Read_Model, Read_Data
+from Read import initialize_model, Read_Data
 from Search import Search_by_Image, Search_by_Word, Search_by_ImageAndText
 # 初始化模型和數據
 @st.cache_resource
