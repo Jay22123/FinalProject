@@ -50,7 +50,7 @@ if option == "透過圖片搜尋食譜":
                     st.warning(f"{result['品名']} 的圖片未找到")
                 st.write(f"食材：{result['食材']}")
                 st.write(f"步驟：{result['步驟']}")
-                 st.write("-" * 50)
+                st.write("-" * 50)
                 
 # 功能 2：透過文字搜尋食譜
 elif option == "透過文字搜尋食譜":
