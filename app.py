@@ -7,7 +7,7 @@ from Search import Search_by_Image, Search_by_Word, Search_by_ImageAndText
 def initialize_data():
     return Read_Data()
 
-if __name__ == '__main__':
+def main():
     recipes = initialize_data()
 
     # 應用程式標題
@@ -100,3 +100,6 @@ if __name__ == '__main__':
             st.warning("請上傳圖片後再進行搜尋")
         elif not search_query:
             st.warning("請輸入描述後再進行搜尋")
+
+if __name__ == '__main__':
+    main()
