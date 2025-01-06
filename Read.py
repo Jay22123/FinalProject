@@ -1,6 +1,7 @@
 from transformers import ChineseCLIPProcessor, ChineseCLIPModel,AutoTokenizer
 import pandas as pd
 import torch
+import os
 
 MODEL_PATH = "./fine_tuned_chinese_clip"
 
