@@ -6,17 +6,15 @@ from tqdm import tqdm
 import math
 import re
 import numpy as np
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
+#from langchain.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
 import warnings
 
 warnings.filterwarnings('ignore')
-__import__('pysqlite3') 
+#__import__('pysqlite3') 
 import sys 
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
-
-
+#sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 
 def recipes_embedding(recipes,model,processor,tokenizer):
