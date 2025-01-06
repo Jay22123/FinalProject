@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 from Read import initialize_model, Read_Data
 from Search import Search_by_Image, Search_by_Word, Search_by_ImageAndText
+import os
 # 初始化模型和數據
 @st.cache_resource
 def initialize_data():
