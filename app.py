@@ -15,15 +15,7 @@ st.title("智慧家常食譜")
 #st.write("使用 CLIP 模型進行圖片與文字的食譜搜尋")
 
 # 使用模型選擇
-model_option = st.sidebar.radio(
-    "選擇模型版本",
-    ("使用微調過的模型", "使用原始預訓練模型")
-)
-
-if model_option == "使用微調過的模型":
-    model, processor, tokenizer = initialize_model(fine_tuned=True)
-else:
-    model, processor, tokenizer = initialize_model(fine_tuned=False)
+model, processor, tokenizer = initialize_model(fine_tuned=False)
 
 # 功能選擇
 st.sidebar.header("功能選擇")
