@@ -48,12 +48,20 @@ if option == "透過圖片搜尋食譜":
 
 # 功能 2：透過文字搜尋食譜
 elif option == "透過文字搜尋食譜":
-    st.header("透過文字搜尋食譜")
+    st.header("透過文字搜尋食譜")  
+    clip_or_langchain = st.radio("請選擇一個搜尋方式：", ('CLIP', 'Langchain(包含食材)'))
+   
+    if clip_or_langchain == 'CLIP':
+        openai_api_key = None
+
+    elif clip_or_langchain == 'Langchain(包含食材)':        
+        openai_api_key = st.text_input('key:', type='password')
+
     search_query = st.text_input("請輸入您的描述，例如：清淡的蔬菜料理")
     if st.button("開始搜尋"):
         if search_query:
             st.write(f"搜尋描述：{search_query}")
-            results = Search_by_Word(recipes, search_query, model, processor, tokenizer, top_k=5)
+            results = Search_by_Word(recipes, clip_or_langchain, openai_api_key, search_query, model, processor, tokenizer, top_k=5)
 
             # 顯示搜尋結果
             st.write("搜尋結果：")
@@ -69,6 +77,7 @@ elif option == "透過文字搜尋食譜":
 # 功能 3：透過圖片與文字搜尋食譜
 elif option == "透過圖片與文字搜尋食譜":
     st.header("透過圖片與文字搜尋食譜")
+
     uploaded_image = st.file_uploader("請上傳食材圖片", type=["jpg", "png"])
     search_query = st.text_input("請輸入您的描述，例如：雞肉與青菜的搭配料理")
     

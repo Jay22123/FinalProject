@@ -4,9 +4,12 @@ from PIL import Image
 import os
 from tqdm import tqdm
 import math
+import re
 import numpy as np
-import matplotlib.pyplot as plt
-
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import OpenAIEmbeddings
+import warnings
+warnings.filterwarnings('ignore')
 
 def recipes_embedding(recipes,model,processor,tokenizer):
 
@@ -54,42 +57,71 @@ def recipes_embedding(recipes,model,processor,tokenizer):
 
 
 #透過一段話來找到對應的食譜
-def Search_by_Word(recipes, text_query, model, processor, tokenizer, top_k=5):
-    with torch.no_grad():
-        tokenized_text = tokenizer(text_query, return_tensors="pt", padding=True)
-        text_embedding = model.get_text_features(tokenized_text["input_ids"].to("cpu"))
-        text_embedding = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
-        text_embeddings = text_embedding.cpu().numpy()
+def Search_by_Word(recipes, clip_or_langchain, openai_api_key, text_query, model, processor, tokenizer, top_k=5):
 
-    # 取得品名列表
     candidate_list = list(recipes.keys())
 
-    images_files = []
-    for name in candidate_list:
-        image_file = f"{name}.jpg"
-        image_path = os.path.join("./images/", image_file)
-        if os.path.exists(image_path):
-            images_files.append(image_path)
-        else:
-            print(f"警告: 找不到 {name}.jpg 文件")
-    
-    image_embeddings = get_image_embedding(model, processor, images_files)
+    if clip_or_langchain == 'CLIP':
+        with torch.no_grad():
+            tokenized_text = tokenizer(text_query, return_tensors="pt", padding=True)
+            text_embedding = model.get_text_features(tokenized_text["input_ids"].to("cpu"))
+            text_embedding = text_embedding / text_embedding.norm(dim=-1, keepdim=True)
+            text_embeddings = text_embedding.cpu().numpy()
 
-    similarities = (image_embeddings @ text_embeddings.T).squeeze(1)
-    best_match_image_idx = (-similarities).argsort()
+        # 取得品名列表       
 
-    results = []
-    for idx in best_match_image_idx[:top_k]:
-        image_path = images_files[idx]
-        name = candidate_list[idx]
-        similarity = similarities[idx]
-        recipe = recipes[name]
-        results.append({
-            "品名": name,
-            "相似度": similarity,
-            "圖片路徑": image_path,
-            "步驟": recipe["步驟"]
-        })
+        images_files = []
+        for name in candidate_list:
+            image_file = f"{name}.jpg"
+            image_path = os.path.join("./images/", image_file)
+            if os.path.exists(image_path):
+                images_files.append(image_path)
+            else:
+                print(f"警告: 找不到 {name}.jpg 文件")
+        
+        image_embeddings = get_image_embedding(model, processor, images_files)
+
+        similarities = (image_embeddings @ text_embeddings.T).squeeze(1)
+        best_match_image_idx = (-similarities).argsort()
+
+        results = []
+
+        for idx in best_match_image_idx[:top_k]:
+            image_path = images_files[idx]
+            name = candidate_list[idx]
+            similarity = similarities[idx]
+            recipe = recipes[name]
+            results.append({
+                "品名": name,
+                "相似度": similarity,
+                "圖片路徑": image_path,
+                "步驟": recipe["步驟"]
+            })
+
+    elif clip_or_langchain == 'Langchain(包含食材)':
+        
+        results = []
+        os.environ['OPENAI_API_KEY'] = openai_api_key
+
+        embeddings = OpenAIEmbeddings()
+        db_name = 'chroma_db'
+                
+        db = Chroma(persist_directory=db_name, embedding_function=embeddings)
+
+        scoreRes = db.similarity_search_with_score(text_query, k=5)
+
+        for idx in scoreRes:
+            name = idx[0].metadata['source'].split('/')[-1][:-5]
+            image_path = os.path.join("./images/", f"{name}.jpg")
+            similarity = idx[-1]
+            recipe = idx[0].page_content.split('步驟: ')[-1]
+            
+            results.append({
+                "品名": name,
+                "相似度": similarity,
+                "圖片路徑": image_path,
+                "步驟": recipe
+            })
 
     return results
 
@@ -212,3 +244,4 @@ def Search_by_ImageAndText(recipes, image, text, model, processor, tokenizer, to
             "圖片路徑": image_path if os.path.exists(image_path) else None
         })
     return results
+
